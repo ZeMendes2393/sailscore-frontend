@@ -1,103 +1,95 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import Link from "next/link";
+
+// Tipos
+interface Regatta {
+  id: number;
+  name: string;
+  location: string;
+  start_date: string;
+  end_date: string;
+  status?: string;
+}
+
+export default function HomePage() {
+  const [regattas, setRegattas] = useState<Regatta[]>([]);
+
+  useEffect(() => {
+    const fetchRegattas = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/regattas/");
+        const data = await res.json();
+        console.log("✅ Regatas:", data);
+        setRegattas(data);
+      } catch (err) {
+        console.error("❌ Erro ao buscar regatas:", err);
+      }
+    };
+    fetchRegattas();
+  }, []);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="min-h-screen bg-gray-50">
+      {/* Barra de navegação */}
+      <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
+        <div className="text-2xl font-bold text-blue-700">SailScore</div>
+        <ul className="flex space-x-6 text-sm font-medium">
+          <li><Link href="/">Home</Link></li>
+          <li><Link href="/calendar">Calendar</Link></li>
+          <li><Link href="/results">Results</Link></li>
+          <li><Link href="/news">News</Link></li>
+        </ul>
+        <Link href="/login">
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">Sailor Account</button>
+        </Link>
+      </nav>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Hero Banner */}
+      <section className="text-center py-12 bg-[url('/public/waves.jpg')] bg-cover bg-center">
+        <h1 className="text-4xl font-bold text-white drop-shadow mb-4">Regatta Management & Results</h1>
+        <p className="text-white text-lg drop-shadow">Track, participate and follow the world of sailing competitions.</p>
+      </section>
+
+      {/* Lista de Regatas */}
+      <section className="px-8 py-12">
+        <div className="bg-white shadow rounded p-6">
+          <h2 className="text-xl font-semibold mb-4">Upcoming Regattas</h2>
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="py-2">Name</th>
+                <th>Dates</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {regattas.map((regatta) => (
+                <tr key={regatta.id} className="border-b">
+                  <td className="py-2 font-medium">{regatta.name}</td>
+                  <td>{regatta.start_date} – {regatta.end_date}</td>
+                  <td>{regatta.location}</td>
+                  <td>
+                    <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded text-xs">
+                      {regatta.status || "Scheduled"}
+                    </span>
+                  </td>
+                  <td>
+                    <Link href={`/regattas/${regatta.id}`}>
+                      <button className="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-700">
+                        More Info
+                      </button>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </section>
+    </main>
   );
 }
